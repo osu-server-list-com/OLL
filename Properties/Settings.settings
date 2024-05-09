@@ -1,0 +1,18 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="OLL.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="clientSecret" Type="System.String" Scope="User">
+      <Value Profile="(Default)">GET YOU'RE KEY AT https://discord.gg/KDQf3xdjMF</Value>
+    </Setting>
+    <Setting Name="favorites" Type="System.Collections.Specialized.StringCollection" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="osupath" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="showonstart" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Votes</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
