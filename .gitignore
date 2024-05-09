@@ -1,3 +1,7 @@
 .vs/
 bin/
 obj/
+
+App.config
+Settings.Designer.cs
+Settings.settings
