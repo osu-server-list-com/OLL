@@ -44,7 +44,7 @@
             label2 = new Label();
             label1 = new Label();
             pictureBox1 = new PictureBox();
-            flowLayoutPanel1 = new FlowLayoutPanel();
+            serverFlowLayout = new FlowLayoutPanel();
             panel2 = new Panel();
             selectedServerTracker = new CurrentServer();
             label3 = new Label();
@@ -251,15 +251,15 @@
             pictureBox1.TabIndex = 0;
             pictureBox1.TabStop = false;
             // 
-            // flowLayoutPanel1
+            // serverFlowLayout
             // 
-            flowLayoutPanel1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            flowLayoutPanel1.AutoScroll = true;
-            flowLayoutPanel1.BackColor = Color.White;
-            flowLayoutPanel1.Location = new Point(229, 37);
-            flowLayoutPanel1.Name = "flowLayoutPanel1";
-            flowLayoutPanel1.Size = new Size(766, 442);
-            flowLayoutPanel1.TabIndex = 1;
+            serverFlowLayout.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            serverFlowLayout.AutoScroll = true;
+            serverFlowLayout.BackColor = Color.White;
+            serverFlowLayout.Location = new Point(229, 37);
+            serverFlowLayout.Name = "serverFlowLayout";
+            serverFlowLayout.Size = new Size(766, 442);
+            serverFlowLayout.TabIndex = 1;
             // 
             // panel2
             // 
@@ -368,7 +368,7 @@
             favoriteSortButton.UseVisualStyleBackColor = true;
             favoriteSortButton.Click += favoriteSortButton_Click;
             // 
-            // Form1
+            // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -378,11 +378,11 @@
             Controls.Add(voteSortButton);
             Controls.Add(panel2);
             Controls.Add(loaderImage);
-            Controls.Add(flowLayoutPanel1);
+            Controls.Add(serverFlowLayout);
             Controls.Add(panel1);
             ForeColor = Color.White;
             Icon = (Icon)resources.GetObject("$this.Icon");
-            Name = "Form1";
+            Name = "MainForm";
             Text = "OLL";
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
@@ -402,7 +402,7 @@
         private Panel panel1;
         private Label label1;
         private PictureBox pictureBox1;
-        private FlowLayoutPanel flowLayoutPanel1;
+        private FlowLayoutPanel serverFlowLayout;
         private Panel panel2;
         private Label label2;
         private Button playButton;

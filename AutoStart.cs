@@ -10,7 +10,7 @@ namespace OLL
 
     public static class AutoStart
     {
-        private const string AppName = "MyApplication";
+        private const string AppName = "OLL";
         private const string RunKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
 
         public static bool IsAutoStartEnabled()

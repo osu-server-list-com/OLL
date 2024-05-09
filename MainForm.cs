@@ -19,6 +19,9 @@ namespace OLL
 
         public MainForm()
         {
+
+            this.SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
+
             InitializeComponent();
 
             if (Settings.Default.favorites == null) Settings.Default.favorites = new System.Collections.Specialized.StringCollection();
@@ -26,7 +29,7 @@ namespace OLL
             Settings.Default.Save();
 
             autoStartCheckBox.Checked = AutoStart.IsAutoStartEnabled();
-           
+
             string savedValue = Settings.Default.showonstart;
 
             int index = showOnStartBox.FindString(savedValue);
@@ -39,7 +42,7 @@ namespace OLL
             if (Settings.Default.osupath.Length < 2)
             {
                 string osuLocalAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\osu!";
-               
+
                 string osuExePath = Path.Combine(osuLocalAppDataPath, "osu!.exe");
 
                 if (File.Exists(osuExePath))
@@ -85,8 +88,8 @@ namespace OLL
                 FoundExe();
             }
 
-            InitializeAsync();
-        
+            InitializeAsync().ConfigureAwait(false);
+
 
         }
 
@@ -96,69 +99,69 @@ namespace OLL
             exeLabel.Text = "osu Executable found";
         }
 
+        private bool alreadySorted = false;
+
         private void InitializeServersAsync()
         {
-      
+
             InitializeServersOnUIThreadAsync();
-            switch (Settings.Default.showonstart)
+            if(!alreadySorted)
             {
-                case "Players":
-                    sort(false);
-                    break;
+                switch (Settings.Default.showonstart)
+                {
+                    case "Players":
+                        sort(false);
+                        break;
 
-                case "Favorites":
-                    ShowFavorites(true);
-                    break;
+                    case "Favorites":
+                        ShowFavorites(true);
+                        break;
 
-                default:
-                    sort(true);
-                    break;
+                    default:
+                        sort(true);
+                        break;
+                }
             }
+            
         }
 
         private async void InitializeServersOnUIThreadAsync()
         {
-            if (flowLayoutPanel1.InvokeRequired)
+            if (serverFlowLayout.InvokeRequired)
             {
                 // If the current thread is not the UI thread, invoke this method on the UI thread
-                flowLayoutPanel1.Invoke(new MethodInvoker(InitializeServersOnUIThreadAsync));
+                serverFlowLayout.Invoke(new MethodInvoker(InitializeServersOnUIThreadAsync));
                 return;
             }
 
-            for(int i = 0; i < clientServers.Count(); i++)
+            for (int i = 0; i < clientServers.Count(); i++)
             {
-                ClientServer sv = null;
+                ClientServer? sv = null;
                 try
                 {
                     sv = clientServers[i];
-                }catch(Exception) { }
 
-                if(sv != null)
+                
+                }
+                catch (Exception) { }
+
+                if (sv != null)
                 {
                     Server v = new Server(sv, selectedServerTracker);
-                    HideTabsOnStart(v);
-              
-                    flowLayoutPanel1.Controls.Add(v);
+                    if (Settings.Default.showonstart == "Favorites")
+                    {
+                        if (!Settings.Default.favorites.Contains(sv.ID.ToString())) v.Visible = false;
+                        alreadySorted = true;
+                        await Task.Delay(25);
+                    }
+                  
+                    serverFlowLayout.Controls.Add(v);
                 }
             }
 
         }
 
-        private async Task HideTabsOnStart(Server v)
-        {
-            if (v.IsHandleCreated)
-            {
-                if (v.InvokeRequired)
-                {
-                    await InvokeAsync(() => HideTabsOnStart(v));
-                    return;
-                }
-
-                if(v.Visible == true) v.Visible = false;
-                await Task.Delay(100);
-            }
-        }
-
+        
         private Task InvokeAsync(Action action)
         {
             var tcs = new TaskCompletionSource<object>();
@@ -167,7 +170,7 @@ namespace OLL
                 try
                 {
                     action();
-                    tcs.SetResult(null);
+                    tcs.SetResult(Task.CompletedTask);
                 }
                 catch (Exception ex)
                 {
@@ -179,16 +182,16 @@ namespace OLL
 
         private async Task HideLoader()
         {
-            if(loaderImage.IsHandleCreated)
+            if (loaderImage.IsHandleCreated)
             {
                 if (loaderImage.InvokeRequired)
                 {
-                    loaderImage.Invoke((MethodInvoker)delegate { HideLoader(); });
+                    await InvokeAsync(async () => await HideLoader());
                     return;
                 }
                 loaderImage.Visible = false;
             }
-
+            await Task.Delay(25);
         }
 
         private async Task InitializeAsync()
@@ -197,25 +200,27 @@ namespace OLL
             {
                 using (var httpClient = new HttpClient())
                 {
-                   
-                    string userAgent = "OLL 1.0"; 
+
+                    string userAgent = "OLL 1.0";
                     httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent);
                     HttpResponseMessage httpResponse = await httpClient.GetAsync(APIURL + "/api/v2/client/servers?key=" + Settings.Default.clientSecret).ConfigureAwait(false);
-                   
+
                     if (httpResponse.IsSuccessStatusCode)
                     {
-                        var content = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                        var response = Newtonsoft.Json.JsonConvert.DeserializeObject<IEnumerable<ClientServer>>(content);
+                       var content = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                       var response = Newtonsoft.Json.JsonConvert.DeserializeObject<IEnumerable<ClientServer>>(content);
+                       
+                       if (response == null) throw new Exception("Unauthorized");
 
-                        foreach (ClientServer srv in response)
-                        {
+                       foreach (ClientServer srv in response)
+                       {
                             clientServers.Add(srv);
-                           
-                        }
 
-                        
-                        await HideLoader();
-                        InitializeServersAsync();
+                       }
+
+
+                       await HideLoader();
+                       InitializeServersAsync();
                     }
                     else
                     {
@@ -243,7 +248,7 @@ namespace OLL
             ShowFavorites(false);
             List<Server> serverControls = new List<Server>();
 
-            foreach (Control c in flowLayoutPanel1.Controls)
+            foreach (Control c in serverFlowLayout.Controls)
             {
                 if (c is Server serv)
                 {
@@ -260,11 +265,11 @@ namespace OLL
                 serverControls.Sort((serv1, serv2) => serv2.server.Players.CompareTo(serv1.server.Players));
             }
 
-            flowLayoutPanel1.Controls.Clear();
+            serverFlowLayout.Controls.Clear();
 
             foreach (Server serverControl in serverControls)
             {
-                flowLayoutPanel1.Controls.Add(serverControl);
+                serverFlowLayout.Controls.Add(serverControl);
             }
         }
 
@@ -275,38 +280,21 @@ namespace OLL
 
         private void ShowFavorites(bool favorites)
         {
-            if (favorites)
+            foreach (Control c in serverFlowLayout.Controls)
             {
-                foreach (Control c in flowLayoutPanel1.Controls)
+                if (c is Server serv)
                 {
-                    if (c is Server serv)
+                    bool isFavorite = Settings.Default.favorites.Contains(serv.server.ID.ToString());
+                    if (favorites)
                     {
-                        if (Settings.Default.favorites.Contains(serv.server.ID.ToString()))
-                        {
-
-                            if (c.Visible == false) { c.Visible = true; }
-                        }
-                        else
-                        {
-                            if (c.Visible == true) c.Visible = false;
-                        }
-
+                        c.Visible = isFavorite;
                     }
-                }
-            }
-            else
-            {
-                foreach (Control c in flowLayoutPanel1.Controls)
-                {
-                    if (c is Server serv)
+                    else
                     {
                         c.Visible = true;
                     }
                 }
             }
-
-
-
         }
 
         private void favoriteSortButton_Click(object sender, EventArgs e)
@@ -368,7 +356,7 @@ namespace OLL
         {
             if (showOnStartBox.SelectedIndex != -1)
             {
-                string selectedValue = showOnStartBox.SelectedItem.ToString();
+                string? selectedValue = showOnStartBox.SelectedItem.ToString();
                 Settings.Default.showonstart = selectedValue;
                 Settings.Default.Save();
             }
@@ -383,12 +371,15 @@ namespace OLL
         private void CreateShortcut(string shortcutLocation, string targetPath)
         {
 
-            object shortcut = null;
+            object? shortcut = null;
             try
             {
-                Type type = Type.GetTypeFromProgID("WScript.Shell");
+                Type? type = Type.GetTypeFromProgID("WScript.Shell");
+
+                if (type == null) throw new Exception("WScript.Shell Not Found");
+
                 shortcut = Activator.CreateInstance(type);
-                object shortcutProperties = type.InvokeMember("CreateShortcut", BindingFlags.InvokeMethod, null, shortcut, new object[] { shortcutLocation });
+                object? shortcutProperties = type.InvokeMember("CreateShortcut", BindingFlags.InvokeMethod, null, shortcut, new object[] { shortcutLocation });
 
                 type.InvokeMember("TargetPath", BindingFlags.SetProperty, null, shortcutProperties, new object[] { targetPath });
                 type.InvokeMember("Save", BindingFlags.InvokeMethod, null, shortcutProperties, null);
@@ -399,7 +390,6 @@ namespace OLL
 
             finally
             {
-                // Release the shortcut object
                 if (shortcut != null && Marshal.IsComObject(shortcut))
                 {
                     Marshal.ReleaseComObject(shortcut);
@@ -417,5 +407,7 @@ namespace OLL
         {
             MessageBox.Show(this, message, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
+
+      
     }
 }
