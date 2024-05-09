@@ -153,8 +153,9 @@ namespace OLL
                     await InvokeAsync(() => HideTabsOnStart(v));
                     return;
                 }
-                v.Visible = false;
-                await Task.Delay(100); // Adjust delay time as needed
+
+                if(v.Visible == true) v.Visible = false;
+                await Task.Delay(100);
             }
         }
 
@@ -218,7 +219,7 @@ namespace OLL
                     }
                     else
                     {
-                        MessageBox.Show("Error accessing API: " + httpResponse.StatusCode);
+                        MessageBox.Show("Error accessing API: Unauthorized");
                     }
                 }
             }
@@ -282,11 +283,12 @@ namespace OLL
                     {
                         if (Settings.Default.favorites.Contains(serv.server.ID.ToString()))
                         {
-                            c.Visible = true;
+
+                            if (c.Visible == false) { c.Visible = true; }
                         }
                         else
                         {
-                            c.Visible = false;
+                            if (c.Visible == true) c.Visible = false;
                         }
 
                     }

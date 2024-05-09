@@ -2,6 +2,5 @@
 bin/
 obj/
 
-App.config
-Settings.Designer.cs
-Settings.settings
+x86.pubxml.user
+x64.pubxml.user
