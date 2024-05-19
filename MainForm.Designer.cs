@@ -30,7 +30,9 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             panel1 = new Panel();
+            button1 = new Button();
             settingsBox = new GroupBox();
+            changeOsuButton = new Button();
             desktopShortcutButton = new Button();
             label4 = new Label();
             showOnStartBox = new ComboBox();
@@ -53,6 +55,7 @@
             voteSortButton = new Button();
             playerSortButton = new Button();
             favoriteSortButton = new Button();
+            dataPolicyLinkLabel = new LinkLabel();
             panel1.SuspendLayout();
             settingsBox.SuspendLayout();
             exePanel.SuspendLayout();
@@ -65,6 +68,8 @@
             // 
             panel1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
             panel1.BackColor = Color.FromArgb(75, 72, 214);
+            panel1.Controls.Add(dataPolicyLinkLabel);
+            panel1.Controls.Add(button1);
             panel1.Controls.Add(settingsBox);
             panel1.Controls.Add(exePanel);
             panel1.Controls.Add(button8);
@@ -79,8 +84,24 @@
             panel1.Size = new Size(233, 590);
             panel1.TabIndex = 0;
             // 
+            // button1
+            // 
+            button1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
+            button1.BackgroundImageLayout = ImageLayout.None;
+            button1.Cursor = Cursors.Hand;
+            button1.FlatAppearance.BorderColor = Color.White;
+            button1.FlatStyle = FlatStyle.Flat;
+            button1.Image = Properties.Resources.reload;
+            button1.Location = new Point(22, 535);
+            button1.Name = "button1";
+            button1.Size = new Size(40, 42);
+            button1.TabIndex = 3;
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += button1_Click;
+            // 
             // settingsBox
             // 
+            settingsBox.Controls.Add(changeOsuButton);
             settingsBox.Controls.Add(desktopShortcutButton);
             settingsBox.Controls.Add(label4);
             settingsBox.Controls.Add(showOnStartBox);
@@ -93,6 +114,21 @@
             settingsBox.TabStop = false;
             settingsBox.Text = "Settings";
             settingsBox.Visible = false;
+            // 
+            // changeOsuButton
+            // 
+            changeOsuButton.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            changeOsuButton.BackgroundImageLayout = ImageLayout.None;
+            changeOsuButton.Cursor = Cursors.Hand;
+            changeOsuButton.FlatAppearance.BorderColor = Color.White;
+            changeOsuButton.FlatStyle = FlatStyle.Flat;
+            changeOsuButton.Location = new Point(10, 124);
+            changeOsuButton.Name = "changeOsuButton";
+            changeOsuButton.Size = new Size(179, 24);
+            changeOsuButton.TabIndex = 7;
+            changeOsuButton.Text = "Change osu! Path";
+            changeOsuButton.UseVisualStyleBackColor = true;
+            changeOsuButton.Click += changeOsuButton_Click;
             // 
             // desktopShortcutButton
             // 
@@ -368,6 +404,20 @@
             favoriteSortButton.UseVisualStyleBackColor = true;
             favoriteSortButton.Click += favoriteSortButton_Click;
             // 
+            // dataPolicyLinkLabel
+            // 
+            dataPolicyLinkLabel.AutoSize = true;
+            dataPolicyLinkLabel.DisabledLinkColor = Color.White;
+            dataPolicyLinkLabel.LinkColor = Color.White;
+            dataPolicyLinkLabel.Location = new Point(68, 560);
+            dataPolicyLinkLabel.Name = "dataPolicyLinkLabel";
+            dataPolicyLinkLabel.Size = new Size(68, 15);
+            dataPolicyLinkLabel.TabIndex = 6;
+            dataPolicyLinkLabel.TabStop = true;
+            dataPolicyLinkLabel.Text = "Data-policy";
+            dataPolicyLinkLabel.VisitedLinkColor = Color.FromArgb(128, 128, 255);
+            dataPolicyLinkLabel.LinkClicked += dataPolicyLinkLabel_LinkClicked;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -426,5 +476,8 @@
         private Label label4;
         private ComboBox showOnStartBox;
         private Button desktopShortcutButton;
+        private Button changeOsuButton;
+        private Button button1;
+        private LinkLabel dataPolicyLinkLabel;
     }
 }

@@ -105,7 +105,7 @@ namespace OLL
         {
 
             InitializeServersOnUIThreadAsync();
-            if(!alreadySorted)
+            if (!alreadySorted)
             {
                 switch (Settings.Default.showonstart)
                 {
@@ -122,7 +122,25 @@ namespace OLL
                         break;
                 }
             }
-            
+
+        }
+
+        private void ShowFavorites(bool favorites)
+        {
+            foreach (Control c in serverFlowLayout.Controls)
+            {
+                if (c is Server serv)
+                {
+                    if (favorites)
+                    {
+                        c.Visible = Settings.Default.favorites.Contains(serv.server.ID.ToString());
+                    }
+                    else
+                    {
+                        c.Visible = true;
+                    }
+                }
+            }
         }
 
         private async void InitializeServersOnUIThreadAsync()
@@ -141,7 +159,7 @@ namespace OLL
                 {
                     sv = clientServers[i];
 
-                
+
                 }
                 catch (Exception) { }
 
@@ -154,14 +172,14 @@ namespace OLL
                         alreadySorted = true;
                         await Task.Delay(25);
                     }
-                  
+
                     serverFlowLayout.Controls.Add(v);
                 }
             }
 
         }
 
-        
+
         private Task InvokeAsync(Action action)
         {
             var tcs = new TaskCompletionSource<object>();
@@ -201,26 +219,26 @@ namespace OLL
                 using (var httpClient = new HttpClient())
                 {
 
-                    string userAgent = "OLL 1.0";
+                    string userAgent = "OLL 1.1";
                     httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent);
                     HttpResponseMessage httpResponse = await httpClient.GetAsync(APIURL + "/api/v2/client/servers?key=" + Settings.Default.clientSecret).ConfigureAwait(false);
 
                     if (httpResponse.IsSuccessStatusCode)
                     {
-                       var content = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                       var response = Newtonsoft.Json.JsonConvert.DeserializeObject<IEnumerable<ClientServer>>(content);
-                       
-                       if (response == null) throw new Exception("Unauthorized");
+                        var content = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                        var response = Newtonsoft.Json.JsonConvert.DeserializeObject<IEnumerable<ClientServer>>(content);
 
-                       foreach (ClientServer srv in response)
-                       {
+                        if (response == null) throw new Exception("Unauthorized");
+
+                        foreach (ClientServer srv in response)
+                        {
                             clientServers.Add(srv);
 
-                       }
+                        }
 
 
-                       await HideLoader();
-                       InitializeServersAsync();
+                        await HideLoader();
+                        InitializeServersAsync();
                     }
                     else
                     {
@@ -237,6 +255,8 @@ namespace OLL
                 MessageBox.Show("Main Form An error occurred: " + ex.Message);
             }
         }
+
+
 
         private void voteSortButton_Click(object sender, EventArgs e)
         {
@@ -278,33 +298,14 @@ namespace OLL
             sort(false);
         }
 
-        private void ShowFavorites(bool favorites)
-        {
-            foreach (Control c in serverFlowLayout.Controls)
-            {
-                if (c is Server serv)
-                {
-                    bool isFavorite = Settings.Default.favorites.Contains(serv.server.ID.ToString());
-                    if (favorites)
-                    {
-                        c.Visible = isFavorite;
-                    }
-                    else
-                    {
-                        c.Visible = true;
-                    }
-                }
-            }
-        }
+
 
         private void favoriteSortButton_Click(object sender, EventArgs e)
         {
             ShowFavorites(true);
         }
-
         private void playButton_Click(object sender, EventArgs e)
         {
-
             if (selectedServerTracker.server == null)
             {
                 MessageBox.Show("No server selected");
@@ -312,15 +313,32 @@ namespace OLL
             }
 
             string arguments = "-devserver " + selectedServerTracker.server.Devserver;
+            Process process = new Process();
 
-            Process.Start(new ProcessStartInfo
+            try
             {
-                FileName = Settings.Default.osupath,
-                Arguments = arguments,
-                UseShellExecute = false
-            });
-        }
 
+                process.StartInfo.FileName = Settings.Default.osupath;
+                process.StartInfo.Arguments = arguments;
+                process.StartInfo.UseShellExecute = false;
+                process.Start();
+
+
+            }
+            catch (Exception ex)
+            {
+                if (process.StartInfo.WorkingDirectory != null && process.StartInfo.WorkingDirectory.ToLower() == Environment.SystemDirectory.ToLower())
+                {
+
+                    MessageBox.Show("Osu! couldn't be started due to the Maple loader not being injected, please inject BEFORE trying to start Osu!  : To Inject, press click on your Maple Loader and wait for the pop-up to appear and closes.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                else
+                {
+                    MessageBox.Show($"Error: {ex.Message}. Could not start osu! Make sure the game is properly installed and accessible.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+
+            }
+        }
         private void helpButton_Click(object sender, EventArgs e)
         {
             openDiscord();
@@ -408,6 +426,44 @@ namespace OLL
             MessageBox.Show(this, message, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
-      
+        private void changeOsuButton_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Executable Files|*.exe";
+            openFileDialog.Title = "Select osu!.exe";
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string selectedFilePath = openFileDialog.FileName;
+                if (Path.GetFileName(selectedFilePath) == "osu!.exe")
+                {
+                    Settings.Default.osupath = selectedFilePath;
+                    FoundExe();
+                    Settings.Default.Save();
+                    MessageBox.Show("osu!.exe selected successfully.");
+
+                }
+                else
+                {
+                    MessageBox.Show("Please select the osu!.exe file.");
+                }
+            }
+
+
+        }
+
+        private async void button1_Click(object sender, EventArgs e)
+        {
+            loaderImage.Visible = true;
+            clientServers.Clear();
+            serverFlowLayout.Controls.Clear();
+            await InitializeAsync();
+        }
+
+        private void dataPolicyLinkLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            string url =  "https://osu-server-list.com/privacy-policy";
+            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+        }
     }
 }
