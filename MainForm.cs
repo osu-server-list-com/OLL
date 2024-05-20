@@ -1,5 +1,6 @@
 using OLL.Properties;
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
@@ -13,14 +14,24 @@ namespace OLL
     public partial class MainForm : Form
     {
         public static string APIURL = "https://osu-server-list.com";
+        public static ApplicationState STATE = ApplicationState.IDLE;
         public static string BASEURL = "https://osu-server-list.com";
 
+        public const string VERSION = "1.1.2";
+
         public static List<ClientServer> clientServers = new List<ClientServer>();
+
+        public enum ApplicationState
+        {
+            LOADING,
+            IDLE
+        }
 
         public MainForm()
         {
 
             this.SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
+
 
             InitializeComponent();
 
@@ -214,46 +225,52 @@ namespace OLL
 
         private async Task InitializeAsync()
         {
-            try
+            if (!(STATE == ApplicationState.LOADING))
             {
-                using (var httpClient = new HttpClient())
+                STATE = ApplicationState.LOADING;
+                try
                 {
-
-                    string userAgent = "OLL 1.1";
-                    httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent);
-                    HttpResponseMessage httpResponse = await httpClient.GetAsync(APIURL + "/api/v2/client/servers?key=" + Settings.Default.clientSecret).ConfigureAwait(false);
-
-                    if (httpResponse.IsSuccessStatusCode)
+                    using (var httpClient = new HttpClient())
                     {
-                        var content = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                        var response = Newtonsoft.Json.JsonConvert.DeserializeObject<IEnumerable<ClientServer>>(content);
 
-                        if (response == null) throw new Exception("Unauthorized");
+                        string userAgent = "OLL "+VERSION;
+                        httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent);
+                        HttpResponseMessage httpResponse = await httpClient.GetAsync(APIURL + "/api/v2/client/servers?key=" + Settings.Default.clientSecret).ConfigureAwait(false);
 
-                        foreach (ClientServer srv in response)
+                        if (httpResponse.IsSuccessStatusCode)
                         {
-                            clientServers.Add(srv);
+                            var content = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            var response = Newtonsoft.Json.JsonConvert.DeserializeObject<IEnumerable<ClientServer>>(content);
 
+                            if (response == null) throw new Exception("Unauthorized");
+
+                            foreach (ClientServer srv in response)
+                            {
+                                clientServers.Add(srv);
+
+                            }
+
+
+                            await HideLoader();
+                            InitializeServersAsync();
                         }
-
-
-                        await HideLoader();
-                        InitializeServersAsync();
-                    }
-                    else
-                    {
-                        MessageBox.Show("Error accessing API: Unauthorized");
+                        else
+                        {
+                            MessageBox.Show("Error accessing API: Unauthorized");
+                        }
                     }
                 }
+                catch (HttpRequestException ex)
+                {
+                    MessageBox.Show("HTTP request failed: " + ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Main Form An error occurred: " + ex.Message);
+                }
+                STATE = ApplicationState.IDLE;
             }
-            catch (HttpRequestException ex)
-            {
-                MessageBox.Show("HTTP request failed: " + ex.Message);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Main Form An error occurred: " + ex.Message);
-            }
+
         }
 
 
@@ -454,16 +471,30 @@ namespace OLL
 
         private async void button1_Click(object sender, EventArgs e)
         {
-            loaderImage.Visible = true;
-            clientServers.Clear();
-            serverFlowLayout.Controls.Clear();
-            await InitializeAsync();
+            if (!(STATE == ApplicationState.LOADING))
+            {
+                loaderImage.Visible = true;
+                clientServers.Clear();
+                serverFlowLayout.Controls.Clear();
+                await InitializeAsync();
+            }
         }
 
         private void dataPolicyLinkLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            string url =  "https://osu-server-list.com/privacy-policy";
+            string url = "https://osu-server-list.com/privacy-policy";
             Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+        }
+
+        private void selectedServerTracker_Paint(object sender, PaintEventArgs e)
+        {
+            using (Pen thinPen = new Pen(Color.White, 1))
+            {
+                Rectangle rect = selectedServerTracker.ClientRectangle;
+                rect.Width -= 1;
+                rect.Height -= 1;
+                e.Graphics.DrawRectangle(thinPen, rect);
+            }
         }
     }
 }

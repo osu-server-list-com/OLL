@@ -30,6 +30,7 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             panel1 = new Panel();
+            dataPolicyLinkLabel = new LinkLabel();
             button1 = new Button();
             settingsBox = new GroupBox();
             changeOsuButton = new Button();
@@ -55,7 +56,6 @@
             voteSortButton = new Button();
             playerSortButton = new Button();
             favoriteSortButton = new Button();
-            dataPolicyLinkLabel = new LinkLabel();
             panel1.SuspendLayout();
             settingsBox.SuspendLayout();
             exePanel.SuspendLayout();
@@ -84,9 +84,24 @@
             panel1.Size = new Size(233, 590);
             panel1.TabIndex = 0;
             // 
+            // dataPolicyLinkLabel
+            // 
+            dataPolicyLinkLabel.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            dataPolicyLinkLabel.AutoSize = true;
+            dataPolicyLinkLabel.DisabledLinkColor = Color.White;
+            dataPolicyLinkLabel.LinkColor = Color.White;
+            dataPolicyLinkLabel.Location = new Point(68, 560);
+            dataPolicyLinkLabel.Name = "dataPolicyLinkLabel";
+            dataPolicyLinkLabel.Size = new Size(68, 15);
+            dataPolicyLinkLabel.TabIndex = 6;
+            dataPolicyLinkLabel.TabStop = true;
+            dataPolicyLinkLabel.Text = "Data-policy";
+            dataPolicyLinkLabel.VisitedLinkColor = Color.FromArgb(128, 128, 255);
+            dataPolicyLinkLabel.LinkClicked += dataPolicyLinkLabel_LinkClicked;
+            // 
             // button1
             // 
-            button1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
+            button1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             button1.BackgroundImageLayout = ImageLayout.None;
             button1.Cursor = Cursors.Hand;
             button1.FlatAppearance.BorderColor = Color.White;
@@ -316,13 +331,14 @@
             selectedServerTracker.Name = "selectedServerTracker";
             selectedServerTracker.Size = new Size(265, 58);
             selectedServerTracker.TabIndex = 2;
+            selectedServerTracker.Paint += selectedServerTracker_Paint;
             // 
             // label3
             // 
             label3.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
             label3.AutoSize = true;
             label3.ForeColor = Color.White;
-            label3.Location = new Point(427, 8);
+            label3.Location = new Point(423, 7);
             label3.Name = "label3";
             label3.Size = new Size(89, 15);
             label3.TabIndex = 1;
@@ -403,20 +419,6 @@
             favoriteSortButton.Text = "Favorites";
             favoriteSortButton.UseVisualStyleBackColor = true;
             favoriteSortButton.Click += favoriteSortButton_Click;
-            // 
-            // dataPolicyLinkLabel
-            // 
-            dataPolicyLinkLabel.AutoSize = true;
-            dataPolicyLinkLabel.DisabledLinkColor = Color.White;
-            dataPolicyLinkLabel.LinkColor = Color.White;
-            dataPolicyLinkLabel.Location = new Point(68, 560);
-            dataPolicyLinkLabel.Name = "dataPolicyLinkLabel";
-            dataPolicyLinkLabel.Size = new Size(68, 15);
-            dataPolicyLinkLabel.TabIndex = 6;
-            dataPolicyLinkLabel.TabStop = true;
-            dataPolicyLinkLabel.Text = "Data-policy";
-            dataPolicyLinkLabel.VisitedLinkColor = Color.FromArgb(128, 128, 255);
-            dataPolicyLinkLabel.LinkClicked += dataPolicyLinkLabel_LinkClicked;
             // 
             // MainForm
             // 
